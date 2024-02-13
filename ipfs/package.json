@@ -10,7 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@web3-storage/w3up-client": "^12.4.1"
+    "@web3-storage/w3up-client": "^12.4.1",
+    "dotenv": "^16.4.4"
   },
   "type": "module"
 }
