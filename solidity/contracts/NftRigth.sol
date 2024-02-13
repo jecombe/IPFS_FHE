@@ -14,18 +14,20 @@ contract NftRigth is ERC721, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
-    mapping(uint => Data) private nftData; // Mapping to store NFT locations and non-accessible locations.
+    mapping(uint => Data) private nftData;
 
     constructor() ERC721("DigitalNftRigth", "DNR") {}
 
     function mint() public {
         _tokenIds.increment();
         uint256 newTokenId = _tokenIds.current();
-        nftData[newTokenId].privateKey = TFHE.randEuint32();
+        nftData[newTokenId].privateKey = createPrivateKeys();
         _safeMint(msg.sender, newTokenId);
     }
 
-    function createPrivateKeys() internal {}
+    function createPrivateKeys() internal view returns (euint32) {
+        return TFHE.randEuint32();
+    }
 
     function _baseURI() internal view override returns (string memory) {
         return "https://example.com/api/token/";
