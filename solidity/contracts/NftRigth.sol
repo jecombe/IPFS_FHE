@@ -12,6 +12,10 @@ struct Data {
     euint32 metadata;
 }
 
+struct ReadData {
+    bytes metadata;
+}
+
 contract NftRigth is ERC721, Ownable, EIP712WithModifier {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
@@ -37,22 +41,27 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
         _safeMint(msg.sender, newTokenId);
     }
 
-    // Fonction pour ajouter des métadonnées à un token
     function changeData(uint256 tokenId, bytes calldata _newMetadata) external {
         require(msg.sender == ownerOf(tokenId), "You are not the owner of this token");
         nftData[tokenId].metadata = TFHE.asEuint32(_newMetadata);
         emit ChangeMessage(msg.sender, tokenId);
     }
 
-    function accessData(uint256 tokenId) public {
+    function getData(Data memory _nftData, bytes32 publicKey) internal view returns (ReadData memory) {
+        bytes memory meta = TFHE.reencrypt(_nftData.metadata, publicKey, 0);
+        return ReadData(meta);
+    }
+
+    function accessData(
+        uint256 tokenId,
+        bytes32 publicKey,
+        bytes calldata signature
+    ) external view onlySignedPublicKey(publicKey, signature) returns (ReadData memory) {
         require(msg.sender == ownerOf(tokenId), "You are not the owner of this token");
+        return getData(nftData[tokenId], publicKey);
     }
 
     function createPrivateKeys() internal view returns (euint32) {
         return TFHE.randEuint32();
-    }
-
-    function _baseURI() internal view override returns (string memory) {
-        return "https://example.com/api/token/";
     }
 }
