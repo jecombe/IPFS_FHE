@@ -7,13 +7,16 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "fhevm/abstracts/EIP712WithModifier.sol";
 
+struct Metadata {
+    euint32 data;
+}
 struct Data {
     euint32 privateKey;
-    euint32 metadata;
+    euint32[] metadata;
 }
 
 struct ReadData {
-    bytes metadata;
+    bytes[] metadata;
 }
 
 contract NftRigth is ERC721, Ownable, EIP712WithModifier {
@@ -28,37 +31,47 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
 
     constructor() ERC721("DigitalNftRigth", "DNR") EIP712WithModifier("Authorization token", "1") {}
 
-    modifier isOwner(uint256 tokenId) {
-        _;
+    function addMetadata(bytes[] calldata _metadata) internal pure returns (euint32[] memory) {
+        euint32[] memory positions = new euint32[](_metadata.length);
+
+        for (uint i = 0; i < _metadata.length; i++) {
+            positions[i] = TFHE.asEuint32(_metadata[i]);
+        }
+        return positions;
     }
 
-    function mint(bytes calldata _metadata) external {
-        euint32 data = TFHE.asEuint32(_metadata);
-        _tokenIds.increment();
+    function mintNft(bytes[] calldata _metadata) external {
         uint256 newTokenId = _tokenIds.current();
-        nftData[newTokenId].privateKey = createPrivateKeys();
-        nftData[newTokenId].metadata = data;
+
+        Data storage newData = nftData[newTokenId];
+        newData.privateKey = createPrivateKeys();
+
+        newData.metadata = addMetadata(_metadata);
+
+        _tokenIds.increment();
+
+        emit NftCreate(msg.sender, newTokenId);
+
         _safeMint(msg.sender, newTokenId);
     }
 
-    function changeData(uint256 tokenId, bytes calldata _newMetadata) external {
-        require(msg.sender == ownerOf(tokenId), "You are not the owner of this token");
-        nftData[tokenId].metadata = TFHE.asEuint32(_newMetadata);
-        emit ChangeMessage(msg.sender, tokenId);
-    }
+    function getData(bytes32 publicKey, uint256 tokenId) internal view returns (bytes[] memory) {
+        Data storage data = nftData[tokenId];
+        bytes[] memory result = new bytes[](data.metadata.length);
+        for (uint i = 0; i < data.metadata.length; i++) {
+            result[i] = TFHE.reencrypt(nftData[tokenId].metadata[i], publicKey, 0);
+        }
 
-    function getData(Data memory _nftData, bytes32 publicKey) internal view returns (ReadData memory) {
-        bytes memory meta = TFHE.reencrypt(_nftData.metadata, publicKey, 0);
-        return ReadData(meta);
+        return result;
     }
 
     function accessData(
         uint256 tokenId,
         bytes32 publicKey,
         bytes calldata signature
-    ) external view onlySignedPublicKey(publicKey, signature) returns (ReadData memory) {
+    ) external view onlySignedPublicKey(publicKey, signature) returns (bytes[] memory) {
         require(msg.sender == ownerOf(tokenId), "You are not the owner of this token");
-        return getData(nftData[tokenId], publicKey);
+        return getData(publicKey, tokenId);
     }
 
     function createPrivateKeys() internal view returns (euint32) {
