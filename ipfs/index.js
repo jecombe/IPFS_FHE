@@ -21,10 +21,11 @@ const addData = async (helia) => {
 const start = async () => {
   try {
     const helia = await create();
-    const rep = await addData(await create());
+    const rep = await addData(helia);
     console.log(rep);
   } catch (error) {
     console.log(error);
+
   }
 };
 
