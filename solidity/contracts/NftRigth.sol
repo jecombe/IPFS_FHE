@@ -77,7 +77,7 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
 
     function cleanMapping(uint256 tokenId) internal {
         delete nftData[tokenId];
-        //delete privateKey[msg.sender];
+        //   delete privateKey[msg.sender][tokenId];
         delete idsOwner[tokenId];
     }
 
