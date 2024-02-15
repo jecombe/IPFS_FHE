@@ -7,11 +7,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "fhevm/abstracts/EIP712WithModifier.sol";
 
-struct Metadata {
-    euint32 data;
-}
 struct Data {
     euint32 privateKey;
+    address owner;
     euint32[] metadata;
 }
 
@@ -24,6 +22,7 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
     Counters.Counter private _tokenIds;
 
     mapping(uint => Data) private nftData;
+    // mapping(uint => euint32) private prvKey;
 
     event NftCreate(address indexed user, uint256 indexed tokenId);
     event ChangeMessage(address indexed user, uint256 indexed tokenId);
@@ -47,6 +46,7 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
         newData.privateKey = createPrivateKeys();
 
         newData.metadata = addMetadata(_metadata);
+        newData.owner = msg.sender;
 
         _tokenIds.increment();
 
