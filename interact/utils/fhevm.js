@@ -1,11 +1,7 @@
 const { createInstance } = require("fhevmjs");
-const {
-  JsonRpcProvider,
-  Wallet,
-  ethers
-} = require("ethers");
+const { JsonRpcProvider, Wallet, ethers } = require("ethers");
 
-const dotenv  = require("dotenv");
+const dotenv = require("dotenv");
 
 dotenv.config();
 
@@ -14,7 +10,7 @@ const provider = new JsonRpcProvider(process.env.PROVIDER);
 console.log(process.env.SECRET, process.env.PROVIDER);
 const signer = new Wallet(process.env.SECRET, provider);
 
- const createFhevmInstance = async () => {
+const createFhevmInstance = async () => {
   if (_instance) return _instance;
 
   // 1. Get chain id
@@ -38,11 +34,11 @@ const signer = new Wallet(process.env.SECRET, provider);
   return createInstance({ chainId, publicKey });
 };
 
- const getInstance = () => {
+const getInstance = () => {
   return _instance;
 };
 
- const getTokenSignature = async (contractAddress) => {
+const getTokenSignature = async (contractAddress) => {
   if (getInstance().hasKeypair(contractAddress)) {
     return getInstance().getTokenSignature(contractAddress);
   } else {
@@ -62,5 +58,5 @@ const signer = new Wallet(process.env.SECRET, provider);
 module.exports = {
   getInstance,
   getTokenSignature,
-  createFhevmInstance
-}
+  createFhevmInstance,
+};

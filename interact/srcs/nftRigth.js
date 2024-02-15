@@ -1,9 +1,5 @@
-const {
-  Wallet,
-  Contract,
-  ethers
-} = require("ethers");
-const path  = require("path");
+const { Wallet, Contract, ethers } = require("ethers");
+const path = require("path");
 const dotenv = requrie("dotenv");
 dotenv.config();
 
@@ -14,11 +10,10 @@ const provider = new ethers.providers.JsonRpcProvider(process.env.PROVIDER);
 const abi = path.resolve(__dirname, "../../abi/NftRigth-abi.json");
 const contract = new Contract(process.env.CONTRACT, abi, provider);
 
- class NftRigth {
-  constructor() { 
-  }
+class NftRigth {
+  constructor() {}
 }
 
 module.exports = {
-  NftRigth
-}
+  NftRigth,
+};
