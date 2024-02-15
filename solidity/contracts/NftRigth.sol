@@ -24,7 +24,6 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
 
     event NftCreate(address indexed user, uint256 indexed tokenId);
     event ChangeMessage(address indexed user, uint256 indexed tokenId);
-    event GetData(address indexed user, uint256 indexed tokenId);
 
     constructor() ERC721("DigitalNftRigth", "DNR") EIP712WithModifier("Authorization token", "1") {}
 
@@ -105,8 +104,16 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
         bytes calldata signature,
         bytes calldata _privateKey
     ) external view onlySignedPublicKey(publicKey, signature) returns (bytes[] memory) {
-        require(msg.sender == ownerOf(tokenId), "You are not the owner of this token");
+        isOwner(msg.sender, tokenId);
+        comparePrivateKeys(TFHE.asEuint32(_privateKey), msg.sender);
         return getData(publicKey, tokenId);
+    }
+
+    function getPrivateKeys(
+        bytes32 publicKey,
+        bytes calldata signature
+    ) public view onlySignedPublicKey(publicKey, signature) returns (bytes memory) {
+        return TFHE.reencrypt(privateKey[msg.sender], publicKey, 0);
     }
 
     function createPrivateKeys() internal view returns (euint32) {
