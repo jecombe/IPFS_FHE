@@ -61,15 +61,33 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
     //     return idsOwner[tokenId];
     // }
 
-    function addingData(uint256 tokenId, bytes calldata metadata, bytes calldata _privateKey) external {
-        require(msg.sender == ownerOf(tokenId), "You are not the owner of this token");
+    function comparePrivateKeys(euint32 _privateKey, address owner) internal view {
+        TFHE.optReq(TFHE.eq(_privateKey, TFHE.decrypt(privateKey[owner])));
+    }
 
-        TFHE.optReq(TFHE.eq(TFHE.asEuint32(_privateKey), TFHE.decrypt(privateKey[msg.sender])));
+    function isOwner(address owner, uint256 tokenId) internal view {
+        require(owner == ownerOf(tokenId), "You are not the owner of this token");
+    }
+
+    function addingData(uint256 tokenId, bytes calldata metadata, bytes calldata _privateKey) external {
+        isOwner(msg.sender, tokenId);
+        comparePrivateKeys(TFHE.asEuint32(_privateKey), msg.sender);
 
         nftData[tokenId].metadata.push(TFHE.asEuint32(metadata));
     }
 
-    // function deleteData() {}
+    function cleanMapping(uint256 tokenId) internal {
+        delete nftData[tokenId];
+        //delete privateKey[msg.sender];
+        delete idsOwner[tokenId];
+    }
+
+    function burnNft(uint256 tokenId, bytes calldata _privateKey) external {
+        isOwner(msg.sender, tokenId);
+        comparePrivateKeys(TFHE.asEuint32(_privateKey), msg.sender);
+        cleanMapping(tokenId);
+        _burn(tokenId);
+    }
 
     function getData(bytes32 publicKey, uint256 tokenId) internal view returns (bytes[] memory) {
         Data storage data = nftData[tokenId];
@@ -84,7 +102,8 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
     function accessData(
         uint256 tokenId,
         bytes32 publicKey,
-        bytes calldata signature
+        bytes calldata signature,
+        bytes calldata _privateKey
     ) external view onlySignedPublicKey(publicKey, signature) returns (bytes[] memory) {
         require(msg.sender == ownerOf(tokenId), "You are not the owner of this token");
         return getData(publicKey, tokenId);
