@@ -18,6 +18,7 @@ const contract = new Contract(process.env.CONTRACT, abi, provider);
 
 export class NftRigth {
   constructor() {
+    
   }
 
 }
