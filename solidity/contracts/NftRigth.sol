@@ -114,6 +114,7 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
         bytes32 publicKey,
         bytes calldata signature
     ) public view onlySignedPublicKey(publicKey, signature) returns (bytes memory) {
+        isOwner(msg.sender, tokenId);
         return TFHE.reencrypt(privateKey[msg.sender][tokenId], publicKey, 0);
     }
 
