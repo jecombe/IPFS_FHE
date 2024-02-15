@@ -65,6 +65,7 @@
     "access": "public"
   },
   "scripts": {
+    "get-abi": "node ../scripts/getAbi.js",
     "clean": "rimraf ./artifacts ./cache ./coverage ./types ./coverage.json && pnpm typechain",
     "compile": "cross-env TS_NODE_TRANSPILE_ONLY=true hardhat compile",
     "deploy:contracts": "hardhat deploy",
