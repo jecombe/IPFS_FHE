@@ -1,5 +1,3 @@
-const { createHelia } = require("helia");
-const { unixfs } = require("@helia/unixfs");
 
  class Ipfs {
   constructor() {
@@ -7,10 +5,14 @@ const { unixfs } = require("@helia/unixfs");
   }
 
   async create() {
+    const { createHelia } = await import('helia')
+
     return createHelia();
   }
 
   async addData() {
+    const { unixfs } = await import('@helia/unixfs')
+
     if (!this.helia) throw "helia not initialize";
 
     const fs = unixfs(this.helia);

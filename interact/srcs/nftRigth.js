@@ -15,10 +15,8 @@ const abi = path.resolve(__dirname, "../../abi/NftRigth-abi.json");
 const contract = new Contract(process.env.CONTRACT, abi, provider);
 
  class NftRigth {
-  constructor() {
-    
+  constructor() { 
   }
-
 }
 
 module.exports = {
