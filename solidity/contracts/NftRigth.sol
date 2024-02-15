@@ -13,10 +13,6 @@ struct Data {
     euint32[] metadata;
 }
 
-struct ReadData {
-    bytes[] metadata;
-}
-
 contract NftRigth is ERC721, Ownable, EIP712WithModifier {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
