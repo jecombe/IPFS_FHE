@@ -17,7 +17,7 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
     Counters.Counter private _tokenIds;
 
     mapping(uint256 => Data) private nftData;
-    mapping(address => euint32) privateKey;
+    mapping(address => mapping(uint => euint32)) privateKey;
     mapping(uint256 => address) idsOwner;
 
     // mapping(uint => euint32) private prvKey;
@@ -41,8 +41,8 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
 
         Data storage newData = nftData[newTokenId];
 
-        if (TFHE.decrypt(TFHE.eq(privateKey[msg.sender], 0))) {
-            privateKey[msg.sender] = createPrivateKeys();
+        if (TFHE.decrypt(TFHE.eq(privateKey[msg.sender][newTokenId], 0))) {
+            privateKey[msg.sender][newTokenId] = createPrivateKeys();
         }
 
         newData.metadata = addMetadata(_metadata);
@@ -60,8 +60,8 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
     //     return idsOwner[tokenId];
     // }
 
-    function comparePrivateKeys(euint32 _privateKey, address owner) internal view {
-        TFHE.optReq(TFHE.eq(_privateKey, TFHE.decrypt(privateKey[owner])));
+    function comparePrivateKeys(euint32 _privateKey, address owner, uint256 tokenId) internal view {
+        TFHE.optReq(TFHE.eq(_privateKey, TFHE.decrypt(privateKey[owner][tokenId])));
     }
 
     function isOwner(address owner, uint256 tokenId) internal view {
@@ -70,7 +70,7 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
 
     function addingData(uint256 tokenId, bytes calldata metadata, bytes calldata _privateKey) external {
         isOwner(msg.sender, tokenId);
-        comparePrivateKeys(TFHE.asEuint32(_privateKey), msg.sender);
+        comparePrivateKeys(TFHE.asEuint32(_privateKey), msg.sender, tokenId);
 
         nftData[tokenId].metadata.push(TFHE.asEuint32(metadata));
     }
@@ -83,7 +83,7 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
 
     function burnNft(uint256 tokenId, bytes calldata _privateKey) external {
         isOwner(msg.sender, tokenId);
-        comparePrivateKeys(TFHE.asEuint32(_privateKey), msg.sender);
+        comparePrivateKeys(TFHE.asEuint32(_privateKey), msg.sender, tokenId);
         cleanMapping(tokenId);
         _burn(tokenId);
     }
@@ -105,15 +105,16 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
         bytes calldata _privateKey
     ) external view onlySignedPublicKey(publicKey, signature) returns (bytes[] memory) {
         isOwner(msg.sender, tokenId);
-        comparePrivateKeys(TFHE.asEuint32(_privateKey), msg.sender);
+        comparePrivateKeys(TFHE.asEuint32(_privateKey), msg.sender, tokenId);
         return getData(publicKey, tokenId);
     }
 
     function getPrivateKeys(
+        uint256 tokenId,
         bytes32 publicKey,
         bytes calldata signature
     ) public view onlySignedPublicKey(publicKey, signature) returns (bytes memory) {
-        return TFHE.reencrypt(privateKey[msg.sender], publicKey, 0);
+        return TFHE.reencrypt(privateKey[msg.sender][tokenId], publicKey, 0);
     }
 
     function createPrivateKeys() internal view returns (euint32) {
