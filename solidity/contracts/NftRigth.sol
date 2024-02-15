@@ -27,12 +27,12 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
     constructor() ERC721("DigitalNftRigth", "DNR") EIP712WithModifier("Authorization token", "1") {}
 
     function addMetadata(bytes[] calldata _metadata) internal pure returns (euint32[] memory) {
-        euint32[] memory positions = new euint32[](_metadata.length);
+        euint32[] memory meta = new euint32[](_metadata.length);
 
         for (uint i = 0; i < _metadata.length; i++) {
-            positions[i] = TFHE.asEuint32(_metadata[i]);
+            meta[i] = TFHE.asEuint32(_metadata[i]);
         }
-        return positions;
+        return meta;
     }
 
     function mintNft(bytes[] calldata _metadata) external {
