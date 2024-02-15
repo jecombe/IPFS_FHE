@@ -40,7 +40,7 @@ const getTokenSignature = async (contractAddress, userAddress) => {
     return getInstance().getTokenSignature(contractAddress);
   } else {
     const generatedToken = getInstance().generatePublicKey({
-      verifyingContract: process.env.GAME,
+      verifyingContract: process.env.CONTRACT,
     });
     const signature = await signer._signTypedData(
       generatedToken.eip712.domain,

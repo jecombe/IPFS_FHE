@@ -1,5 +1,4 @@
-import { createHelia } from "helia";
-import { unixfs } from "@helia/unixfs";
+import { Ipfs } from "./srcs/ipfs.js";
 
 const create = async () => {
   return createHelia();
@@ -20,12 +19,13 @@ const addData = async (helia) => {
 
 const start = async () => {
   try {
-    const helia = await create();
-    const rep = await addData(helia);
-    console.log(rep);
+    const ipfs = new Ipfs();
+    await ipfs.start()
+    const rep = await ipfs.addData();
+    // const helia = await create();
+    // const rep = await addData(helia);
   } catch (error) {
     console.log(error);
-
   }
 };
 
