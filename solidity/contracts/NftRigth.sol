@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "fhevm/abstracts/EIP712WithModifier.sol";
 
 struct Data {
-    euint32 privateKey;
     address owner;
     euint32[] metadata;
 }
@@ -17,7 +16,10 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
-    mapping(uint => Data) private nftData;
+    mapping(uint256 => Data) private nftData;
+    mapping(address => euint32) privateKey;
+    mapping(uint256 => address) idsOwner;
+
     // mapping(uint => euint32) private prvKey;
 
     event NftCreate(address indexed user, uint256 indexed tokenId);
@@ -39,9 +41,13 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
         uint256 newTokenId = _tokenIds.current();
 
         Data storage newData = nftData[newTokenId];
-        newData.privateKey = createPrivateKeys();
+
+        if (TFHE.decrypt(TFHE.eq(privateKey[msg.sender], 0))) {
+            privateKey[msg.sender] = createPrivateKeys();
+        }
 
         newData.metadata = addMetadata(_metadata);
+
         newData.owner = msg.sender;
 
         _tokenIds.increment();
@@ -50,6 +56,20 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
 
         _safeMint(msg.sender, newTokenId);
     }
+
+    // function getOwnerOf(uint256 tokenId) public view returns (address) {
+    //     return idsOwner[tokenId];
+    // }
+
+    function addingData(uint256 tokenId, bytes calldata metadata, bytes calldata _privateKey) external {
+        require(msg.sender == ownerOf(tokenId), "You are not the owner of this token");
+
+        TFHE.optReq(TFHE.eq(TFHE.asEuint32(_privateKey), TFHE.decrypt(privateKey[msg.sender])));
+
+        nftData[tokenId].metadata.push(TFHE.asEuint32(metadata));
+    }
+
+    // function deleteData() {}
 
     function getData(bytes32 publicKey, uint256 tokenId) internal view returns (bytes[] memory) {
         Data storage data = nftData[tokenId];
