@@ -3,7 +3,7 @@
     "@helia/unixfs": "^3.0.0",
     "dotenv": "^16.4.4",
     "ethers": "^6.11.1",
-    "fhevmjs": "^0.3.1",
-    "helia": "^4.0.1"
+    "fhevmjs": "^0.3.2",
+    "helia": "^2.0.3"
   }
 }

@@ -15,9 +15,11 @@ const start = async () => {
   //  await createFhevmInstance();
     const ipfs = new Ipfs();
     // const ipfs = new Ipfs();
-    await ipfs.start();
+    //await ipfs.start();
+    await ipfs.createBlock();
     const rep = await ipfs.addData("addData");
     console.log(rep);
+    await ipfs.readData(rep);
 
     // const helia = await create();
     // const rep = await addData(helia);

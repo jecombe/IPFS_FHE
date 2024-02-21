@@ -1,0 +1,38 @@
+"use client";
+import React, { useEffect, useState } from "react";
+import { createHelia } from 'helia'
+
+export default function Home() {
+  const [id, setId] = useState(null)
+  const [helia, setHelia] = useState(null)
+  const [isOnline, setIsOnline] = useState(false)
+
+  useEffect(() => {
+    const init = async () => {
+      if (helia) return
+
+      const heliaNode = await createHelia()
+
+      // const nodeId = heliaNode.libp2p.peerId.toString()
+      // const nodeIsOnline = heliaNode.libp2p.status === 'started'
+
+      // setHelia(heliaNode)
+      // setId(nodeId)
+      // setIsOnline(nodeIsOnline)
+    }
+
+    init()
+  }, [helia])
+
+  if (!helia || !id) {
+    return <h4>Starting Helia...</h4>
+  }
+
+  return (
+    <div>
+      {/* <h4 data-test="id">ID: {id.toString()}</h4> */}
+      {console.log(isOnline)}
+      {/* <h4 data-test="status">Status: {isOnline ? 'Online' : 'Offline'}</h4> */}
+    </div>
+  )
+}

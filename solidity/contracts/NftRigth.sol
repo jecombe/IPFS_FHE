@@ -20,8 +20,6 @@ contract NftRigth is ERC721, Ownable, EIP712WithModifier {
     mapping(address => mapping(uint => euint32)) privateKey;
     mapping(uint256 => address) idsOwner;
 
-    // mapping(uint => euint32) private prvKey;
-
     event NftCreate(address indexed user, uint256 indexed tokenId);
     event ChangeMessage(address indexed user, uint256 indexed tokenId);
 

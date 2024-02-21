@@ -1,6 +1,44 @@
 class Ipfs {
   constructor() {
     this.helia = null;
+    //this.blockstore = new MemoryBlockstore();
+  }
+
+  async createBlock() {
+    const { MemoryBlockstore } = await import("blockstore-core");
+    const { createHelia } = await import("helia");
+
+    this.blockstore = new MemoryBlockstore();
+
+    this.helia = await  createHelia({
+      blockstore: this.blockstore,
+    });
+  }
+
+  async readData(cid) {
+    const { createHelia } = await import("helia");
+
+    // create a second Helia node using the same blockstore
+    const helia2 = await createHelia({
+      blockstore: this.blockstore,
+    });
+    const { unixfs } = await import("@helia/unixfs");
+
+
+    // create a second filesystem
+    const fs2 = unixfs(helia2);
+
+    // this decoder will turn Uint8Arrays into strings
+    const decoder = new TextDecoder();
+    let text = "";
+
+    // read the file from the blockstore using the second Helia node
+    for await (const chunk of fs2.cat(cid)) {
+      text += decoder.decode(chunk, {
+        stream: true,
+      });
+    }
+    console.log('Added file contents:', text)
   }
 
   async create() {
@@ -9,6 +47,7 @@ class Ipfs {
     return createHelia();
   }
 
+  async getData() {}
   async addData(string) {
     const { unixfs } = await import("@helia/unixfs");
 
